@@ -8,16 +8,20 @@ struct Context
 {
     int i;
     int x;
+    int y;
 };
 
 int main()
 {
-    Context ctx { 0, 0 };
+    Context ctx { 0, 0, 0 };
 
     /* The follow program:
 
     for(i = 1; i < 100; ++i)
+    {
         x = x + i;
+        y = x + y;
+    }
 
     */
 
@@ -28,19 +32,28 @@ int main()
         >,
         LTComparissonStatement<
             Variable<int, Context, &Context::i>,
-            Literal<int, 10>
+            Literal<int, 100>
         >,
         PreIncrStatement<int, Variable<int, Context, &Context::i>>,
-        AssignStatement<int,
-            Variable<int, Context, &Context::x>,
-            AddStatement<int,
+        StatementsList<
+            AssignStatement<int,
                 Variable<int, Context, &Context::x>,
-                Variable<int, Context, &Context::i>
+                AddStatement<int,
+                    Variable<int, Context, &Context::x>,
+                    Variable<int, Context, &Context::i>
+                >
+            >,
+            AssignStatement<int,
+                Variable<int, Context, &Context::y>,
+                AddStatement<int,
+                    Variable<int, Context, &Context::x>,
+                    Variable<int, Context, &Context::y>
+                >
             >
         >
     > f;
 
     f(ctx);
-    cout << ctx.x << endl;
+    cout << "x: " << ctx.x << endl << "y: " << ctx.y << endl;
 }
 
