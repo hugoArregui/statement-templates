@@ -1,1 +1,1 @@
-g++ test.cpp -o test -Wall -Wextra -pedantic -std=c++11
+g++ test.cpp parallelFor.cpp -o test -Wall -Wextra -pedantic -std=c++11 -lpthread -ggdb3

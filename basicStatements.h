@@ -5,7 +5,6 @@
 #ifndef BASIC_STATEMENTS_H
 #define BASIC_STATEMENTS_H
 
-#include <unistd.h> // for obtaining processors count
 #include <iostream>
 using namespace std;
 
@@ -24,6 +23,14 @@ struct StatementBase
     
     list<Statement<void>> substatements;
 */
+};
+
+struct NOP : StatementBase<void>
+{
+    template <class T>
+    void operator()(T& /*context*/)
+    {
+    }
 };
 
 template <class RetType, RetType Value>

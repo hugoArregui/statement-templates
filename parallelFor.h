@@ -5,6 +5,10 @@
 #ifndef PARALLEL_FOR_H
 #define PARALLEL_FOR_H
 
+#include <assert.h>
+#include <pthread.h>
+#include <unistd.h> // for obtaining processors count
+#include <list>
 #include "basicStatements.h"
 
 // This is obtained from Moirai project (http://moirai.googlecode.com) ========
@@ -18,33 +22,29 @@ struct ThreadAdapter
 
 extern "C" void* _runThreadWrapper(void* arg);
 
-void* _runThreadWrapper(void* arg)
-{
-    ThreadAdapter* const adapter = reinterpret_cast<ThreadAdapter*>(arg);
-    adapter->run();
-    delete adapter;
-    return nullptr;
-}
 // ============================================================================
 
 template <class Init, class Condition, class Incr, class Body>
-class ParallelForStatement : ForStatement<Init, Condition, Incr, Body>
+class ParallelForStatement : public ForStatement<Init, Condition, Incr, Body>
 {
 };
 
-template <class AssignLeft, class AssignRight, class CompLeft, CompRight, class Incr, class Body>
-class ParallelForStatement : StatementBase<void>
+template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Incr, class Body>
+class ParallelForStatement<
+        AssignStatement<int, AssignLeft, AssignRight>,
+        LTComparisonStatement<CompLeft, CompRight>,
+        Incr,
+        Body
+      > : public StatementBase<void>
 {
-    Init init;
-    Condition cond;
-    Incr incr;
-    Body body;
+    typedef AssignStatement<int, AssignLeft, AssignRight> AssignType;
+    typedef LTComparisonStatement<CompLeft, CompRight> CompType;
 
     // This matches var = *, returns var
-    template <class Context, int (Context::*Variable), class Right>
-    static bool canGetIndexVarFromAssignment(const Context&, const AssignStatement<Variable<int, Context, Variable>, Right>&, int (Context::*&V))
+    template <class Context, int (Context::*Var), class Right>
+    static bool canGetIndexVarFromAssignment(const Context&, const AssignStatement<int, Variable<int, Context, Var>, Right>&, int (Context::*&V))
     {
-        V = Variable;
+        V = Var;
         return true;
     }
 
@@ -56,10 +56,10 @@ class ParallelForStatement : StatementBase<void>
     }
 
     // This matches var < *, returns var
-    template <class Context, int (Context::*Variable), class Right>
-    static bool canGetIndexVarFromComparison(const Context&, const LTComparison<Variable<int, Context, Variable>, Right>&, int (Context::*&V))
+    template <class Context, int (Context::*Var), class Right>
+    static bool canGetIndexVarFromComparison(const Context&, const LTComparisonStatement<Variable<int, Context, Var>, Right>&, int (Context::*&V))
     {
-        V = Variable;
+        V = Var;
         return true;
     }
 
@@ -98,7 +98,7 @@ class ParallelForStatement : StatementBase<void>
 
     // This matches x = Literal
     template <class Ctx, class Left, int Value>
-    static bool canPredictLowerBound(Ctx&, const AssignStatement<Left, Literal<int, Value>>&, int& lbound)
+    static bool canPredictLowerBound(Ctx&, const AssignStatement<int, Left, Literal<int, Value>>&, int& lbound)
     {
         lbound = Value;
         cout << "< lbound literal " << lbound << endl;
@@ -107,7 +107,7 @@ class ParallelForStatement : StatementBase<void>
 
     // This matches x = Variable
     template <class Left, class Ctx, int (Ctx::*Var)>
-    static bool canPredictLowerBound(Ctx& ctx, const AssignStatement<Left, Variable<int, Ctx, Var>>& v, int& lbound)
+    static bool canPredictLowerBound(Ctx& ctx, const AssignStatement<int, Left, Variable<int, Ctx, Var>>& v, int& lbound)
     {
         lbound = v(ctx);
         cout << "< lbound Variable " << lbound << endl;
@@ -123,16 +123,20 @@ class ParallelForStatement : StatementBase<void>
     }
 
     template <class Ctx>
-    bool canPredictBounds(Ctx& ctx, int& lbound, int& ubound, int (Ctx::*& indexVar))
+    bool canPredictBounds(Ctx& ctx, int& lbound, int& ubound)
     {
         int (Ctx::*assignmentVar);
+        int (Ctx::*compVar);
+
+        CompType comp;
+        AssignType assign;
 
         return
-            canGetIndexVarFromAssignment(ctx, init, assignmentVar) &&
-            canGetIndexVarFromComparison(ctx, init, indexVar) &&
-            assignmentVar == indexVar &&
-            canPredictLowerBound(ctx, init, lbound) &&
-            canPredictUpperBound(ctx, cond, ubound);
+            canGetIndexVarFromAssignment(ctx, assign, assignmentVar) &&
+            canGetIndexVarFromComparison(ctx, comp, compVar) &&
+            assignmentVar == compVar &&
+            canPredictLowerBound(ctx, assign, lbound) &&
+            canPredictUpperBound(ctx, comp, ubound);
     }
 
     /* Given an integer variable k, the following class transforms an assignment of the type
@@ -143,8 +147,9 @@ class ParallelForStatement : StatementBase<void>
        For that, k has to exist in the context.
     */
     template <class Context, class Left, int (Context::*K)>
-    struct TransformAssignment : public AssignStatement<int, Left, Variable<int, K>>
+    struct TransformAssignment : public AssignStatement<int, Left, Variable<int, Context, K>>
     {
+        using AssignStatement<int, Left, Variable<int, Context, K>>::operator();
     };
 
     /* Given an integer variable k, the following class transforms comparison of the type
@@ -155,15 +160,14 @@ class ParallelForStatement : StatementBase<void>
        For that, k has to exist in the context.
     */
     template <class Context, class Left, int (Context::*K)>
-    struct TransformComparison : public ComparisonStatement<Left, Variable<int, K>>
+    struct TransformComparison : public LTComparisonStatement<Left, Variable<int, Context, K>>
     {
+        using LTComparisonStatement<Left, Variable<int, Context, K>>::operator();
     };
 
     template <class Context>
-    class ThreadAdapterImplementation
+    class ThreadAdapterImplementation : public ThreadAdapter
     {
-        Body body;
-
         struct AugmentedContext : Context
         {
             AugmentedContext(const Context& base, int newInitialValue, int newUpperBound)
@@ -176,14 +180,18 @@ class ParallelForStatement : StatementBase<void>
             int newUpperBound;
 
             AugmentedContext() = delete;
+            void operator=(const AugmentedContext&) = delete;
         };
 
         AugmentedContext context;    // a copy!
 
         virtual void run()
         {
-            TransformComparison<AugmentedContext, 
-            body(context);
+            typedef TransformAssignment<AugmentedContext, AssignLeft, &AugmentedContext::newInitialValue> NewAssign;
+            typedef TransformComparison<AugmentedContext, CompLeft, &AugmentedContext::newUpperBound> NewComp;
+
+            ForStatement<NewAssign, NewComp, Incr, Body> serialFor;
+            serialFor(context);
         }
 
     public:
@@ -201,12 +209,31 @@ public:
         {
             const int iterations = ubound - lbound;
             const int processorsCount = sysconf(_SC_NPROCESSORS_ONLN);
-            list<phtread_t> threads;
+            assert(processorsCount > 0);
+            const int iterationsPerThread = iterations / processorsCount;
+            const int extraIterations = iterations % processorsCount;
+            std::list<pthread_t> threads;
+            pthread_t handle;
+            int initial = lbound;
+
+            for (int i = 0; i < processorsCount; ++i)
+            {
+                const int upper = initial + iterationsPerThread +
+                                    (i == 0 ? extraIterations : 0);   // we add the extra iterations to the first thread
+                pthread_create(&handle, nullptr, &_runThreadWrapper, new ThreadAdapterImplementation<T>(context, initial, upper));
+                threads.push_back(handle);
+                initial = upper + 1;
+            }
+
+            for (auto h : threads)
+            {
+                pthread_join(h, nullptr);
+            }
         }
         else
         {
             // Do a serial for:
-            ForStatement<Init, Condition, Incr, Body> serialFor;
+            ForStatement<AssignType, CompType, Incr, Body> serialFor;
             serialFor(context);
         }
     }    

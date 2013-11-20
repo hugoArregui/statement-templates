@@ -3,6 +3,7 @@
 */
 
 #include "basicStatements.h"
+#include "parallelFor.h"
 
 struct Context
 {
@@ -10,6 +11,16 @@ struct Context
     int x;
     int y;
 };
+
+struct MyStatement : StatementBase<void>
+{
+    template <class T>
+    void operator()(T& context)
+    {
+        cout << "i = " << context.i << endl;
+    }
+};
+
 
 static void testSerialFor()
 {
@@ -21,6 +32,7 @@ static void testSerialFor()
     {
         x = x + i;
         y = x + y;
+        myStatement;
     }
 
     */
@@ -49,7 +61,8 @@ static void testSerialFor()
                     Variable<int, Context, &Context::x>,
                     Variable<int, Context, &Context::y>
                 >
-            >
+            >,
+            MyStatement
         >
     > f;
 
@@ -57,8 +70,39 @@ static void testSerialFor()
     cout << "x: " << ctx.x << endl << "y: " << ctx.y << endl;
 }
 
+static void testParallelFor()
+{
+    Context ctx { 0, 0, 0 };
+
+    /* The follow program:
+
+    for(i = 1; i < 100; ++i)
+        myStatement;
+
+    */
+
+    ParallelForStatement<
+        AssignStatement<int,
+            Variable<int, Context, &Context::i>,
+            Literal<int, 1>
+        >,
+        LTComparisonStatement<
+            Variable<int, Context, &Context::i>,
+            Literal<int, 100>
+        >,
+        PreIncrStatement<int, Variable<int, Context, &Context::i>>,
+        MyStatement
+    > pf;
+
+    pf(ctx);
+}
+
 int main()
 {
+    cout << "Serial for: " << endl;
     testSerialFor();
+
+    cout << endl << "Parallel for: " << endl;
+    testParallelFor();
 }
 
