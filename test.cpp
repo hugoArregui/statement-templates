@@ -11,7 +11,7 @@ struct Context
     int y;
 };
 
-int main()
+static void testSerialFor()
 {
     Context ctx { 0, 0, 0 };
 
@@ -30,7 +30,7 @@ int main()
             Variable<int, Context, &Context::i>,
             Literal<int, 1>
         >,
-        LTComparissonStatement<
+        LTComparisonStatement<
             Variable<int, Context, &Context::i>,
             Literal<int, 100>
         >,
@@ -55,5 +55,10 @@ int main()
 
     f(ctx);
     cout << "x: " << ctx.x << endl << "y: " << ctx.y << endl;
+}
+
+int main()
+{
+    testSerialFor();
 }
 

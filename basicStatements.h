@@ -85,14 +85,14 @@ struct PreIncrStatement : StatementBase<RetType>
 };
 
 template <class Left, class Right>
-struct ComparissonStatement: StatementBase<bool>
+struct ComparisonStatement: StatementBase<bool>
 {
     Left left;
     Right right;
 };
 
 template <class Left, class Right>
-struct LTComparissonStatement: ComparissonStatement<Left, Right>
+struct LTComparisonStatement: ComparisonStatement<Left, Right>
 {
     Left left;
     Right right;
