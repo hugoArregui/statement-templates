@@ -161,7 +161,7 @@ struct IfStatement : StatementBase<void>
 {
     Condition cond;
     TruePart tp;
-    ElsePArt ep;
+    ElsePart ep;
 
     template <class T>
     void operator()(T& context)

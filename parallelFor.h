@@ -33,6 +33,7 @@
 #include <unistd.h> // for obtaining processors count
 #include <list>
 #include "basicStatements.h"
+#include "vectorFor.h"
 
 // This is obtained from Moirai project (http://moirai.googlecode.com) ========
 // and is just for the proof of concept. Ignore this snippet.
@@ -48,7 +49,7 @@ extern "C" void* _runThreadWrapper(void* arg);
 // ============================================================================
 
 template <class Init, class Condition, class Incr, class Body>
-class ParallelForStatement : public ForStatement<Init, Condition, Incr, Body>
+class ParallelForStatement : public VectorForStatement<Init, Condition, Incr, Body>
 {
 };
 
@@ -213,8 +214,8 @@ class ParallelForStatement<
             typedef TransformAssignment<AugmentedContext, AssignLeft, &AugmentedContext::newInitialValue> NewAssign;
             typedef TransformComparison<AugmentedContext, CompLeft, &AugmentedContext::newUpperBound> NewComp;
 
-            ForStatement<NewAssign, NewComp, Incr, Body> serialFor;
-            serialFor(context);
+            VectorForStatement<NewAssign, NewComp, Incr, Body> vectorFor;
+            vectorFor(context);
         }
 
     public:
@@ -255,9 +256,9 @@ public:
         }
         else
         {
-            // Do a serial for:
-            ForStatement<AssignType, CompType, Incr, Body> serialFor;
-            serialFor(context);
+            // Do a vector for if possible:
+            VectorForStatement<AssignType, CompType, Incr, Body> vectorFor;
+            vectorFor(context);
         }
     }    
 };
