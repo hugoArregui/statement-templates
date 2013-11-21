@@ -35,17 +35,6 @@ template <class RetType>
 struct StatementBase
 {
     typedef RetType ReturnType;
-
-/*    
-    template <class T>
-    RetType operator()(T& context);
-*/
-
-/*
-    bool operator==(const Statement& other) const;
-    
-    list<Statement<void>> substatements;
-*/
 };
 
 struct NOP : StatementBase<void>
@@ -164,6 +153,23 @@ struct StatementsList<Head, Tail...> : StatementsList<Tail...>
     {
         head(context);
         return Next::operator()(context);
+    }
+};
+
+template <class Condition, class TruePart, class ElsePart = NOP>
+struct IfStatement : StatementBase<void>
+{
+    Condition cond;
+    TruePart tp;
+    ElsePArt ep;
+
+    template <class T>
+    void operator()(T& context)
+    {
+        if (cond(context))
+            tp(context);
+        else
+            ep(context);
     }
 };
 
