@@ -120,6 +120,42 @@ static void testParallelFor()
     pf(ctx);
 }
 
+void testCyclomaticComplexity() {
+    ForStatement<
+        AssignStatement<int,
+            Variable<int, Context, &Context::i>,
+            Literal<int, 1>
+        >,
+        LTComparisonStatement<
+            Variable<int, Context, &Context::i>,
+            Literal<int, 100>
+        >,
+        PreIncrStatement<int, Variable<int, Context, &Context::i>>,
+        StatementsList<
+            AssignStatement<int,
+                Variable<int, Context, &Context::x>,
+                AddStatement<int,
+                    Variable<int, Context, &Context::x>,
+                    Variable<int, Context, &Context::i>
+                >
+            >,
+            AssignStatement<int,
+                Variable<int, Context, &Context::y>,
+                AddStatement<int,
+                    Variable<int, Context, &Context::x>,
+                    Variable<int, Context, &Context::y>
+                >
+            >,
+            IfStatement<
+                LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                MyStatement
+            >
+        >
+    > f;
+
+    cout << "cyclomatic complexity: " << f.complexity << endl;
+}
+
 int main()
 {
     cout << "Serial for: " << endl;
@@ -127,5 +163,7 @@ int main()
 
     cout << endl << "Parallel for: " << endl;
     testParallelFor();
+
+    testCyclomaticComplexity();
 }
 

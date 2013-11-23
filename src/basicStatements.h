@@ -29,12 +29,14 @@
 #define BASIC_STATEMENTS_H
 
 #include <iostream>
+#include "utils.h"
 using namespace std;
 
 template <class RetType>
 struct StatementBase
 {
     typedef RetType ReturnType;
+    static const int complexity = 1;
 };
 
 struct NOP : StatementBase<void>
@@ -43,6 +45,7 @@ struct NOP : StatementBase<void>
     void operator()(T& /*context*/)
     {
     }
+    static const int complexity = 0;
 };
 
 template <class RetType, RetType Value>
@@ -136,6 +139,8 @@ struct StatementsList<Last> : Last
     {
         return Last::operator()(context);
     }
+
+    static const int complexity = Last::complexity;
 };
 
 
@@ -154,6 +159,8 @@ struct StatementsList<Head, Tail...> : StatementsList<Tail...>
         head(context);
         return Next::operator()(context);
     }
+
+    static const int complexity = Max<Head::complexity, Next::complexity>::result;
 };
 
 template <class Condition, class TruePart, class ElsePart = NOP>
@@ -171,6 +178,7 @@ struct IfStatement : StatementBase<void>
         else
             ep(context);
     }
+    static const int complexity = 1 + Max<TruePart::complexity, ElsePart::complexity>::result;
 };
 
 template <class Init, class Condition, class Incr, class Body>
@@ -187,6 +195,7 @@ struct ForStatement : StatementBase<void>
         for(init(context); cond(context); incr(context))
             body(context);
     }
+    static const int complexity = 1 + Body::complexity;
 };
 
 #endif
