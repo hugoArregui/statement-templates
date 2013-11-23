@@ -48,18 +48,17 @@ extern "C" void* _runThreadWrapper(void* arg);
 
 // ============================================================================
 
-template <class Init, class Condition, class Incr, class Body>
-class ParallelForStatement : public VectorForStatement<Init, Condition, Incr, Body>
-{
-};
-
 template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Incr, class Body>
-class ParallelForStatement<
+class ParallelForStatementBase
+/*
+<
         AssignStatement<int, AssignLeft, AssignRight>,
         LTComparisonStatement<CompLeft, CompRight>,
         Incr,
         Body
-      > : public StatementBase<void>
+      >
+*/
+ : public StatementBase<void>
 {
     typedef AssignStatement<int, AssignLeft, AssignRight> AssignType;
     typedef LTComparisonStatement<CompLeft, CompRight> CompType;
@@ -261,6 +260,47 @@ public:
             vectorFor(context);
         }
     }    
+};
+
+template <class Init, class Condition, class Incr, class Body>
+class ParallelForStatement : public VectorForStatement<Init, Condition, Incr, Body>
+{
+};
+
+// Pattern with Pre-increment:
+template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Body>
+class ParallelForStatement<
+        AssignStatement<int, AssignLeft, AssignRight>,
+        LTComparisonStatement<CompLeft, CompRight>,
+        PreIncrStatement<int, AssignLeft>,
+        Body
+      > : public ParallelForStatementBase<
+            AssignLeft,
+            AssignRight,
+            CompLeft,
+            CompRight,
+            PreIncrStatement<int, AssignLeft>,
+            Body
+          >
+{
+};
+
+// Pattern with Post-increment:
+template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Body>
+class ParallelForStatement<
+        AssignStatement<int, AssignLeft, AssignRight>,
+        LTComparisonStatement<CompLeft, CompRight>,
+        PostIncrStatement<int, AssignLeft>,
+        Body
+      > : public ParallelForStatementBase<
+            AssignLeft,
+            AssignRight,
+            CompLeft,
+            CompRight,
+            PostIncrStatement<int, AssignLeft>,
+            Body
+          >
+{
 };
 
 #endif

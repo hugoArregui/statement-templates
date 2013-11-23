@@ -1,6 +1,6 @@
 /**
- * \file  vectorFor.h
- * \brief Basic implementation of a vectorizing for.
+ * \file  unrolledFor.h
+ * \brief Sample for-loop unrolling.
  *
  * Statements-templates: Extending expression templates to statements and flow control
  * <http://statement-templates.googlecode.com/>
@@ -25,17 +25,27 @@
  *
  */
 
-#ifndef VECTOR_FOR_H
-#define VECTOR_FOR_H
+#ifndef UNROLLED_FOR_H
+#define UNROLLED_FOR_H
 
 #include "basicStatements.h"
-#include "unrolledFor.h"
 
 template <class Init, class Condition, class Incr, class Body>
-class VectorForStatement : public UnrolledForStatement<Init, Condition, Incr, Body>
+class UnrolledForStatement : public ForStatement<Init, Condition, Incr, Body>
 {
-    // TBD
+    // Default to basic for
 };
+
+#if 0
+template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Incr, class Body>
+class UnrolledForStatement<
+        AssignStatement<int, AssignLeft, AssignRight>,
+        LTComparisonStatement<CompLeft, CompRight>,
+        Incr,
+        Body
+      > : public StatementBase<void>
+{
+#endif
 
 #endif
 

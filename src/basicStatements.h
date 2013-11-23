@@ -103,6 +103,18 @@ struct PreIncrStatement : StatementBase<RetType>
     }
 };
 
+template <class RetType, class LValue>
+struct PostIncrStatement : StatementBase<RetType>
+{
+    LValue lvalue;
+
+    template <class T>
+    RetType operator()(T& context)
+    {
+        return lvalue(context)++;
+    }
+};
+
 template <class Left, class Right>
 struct ComparisonStatement: StatementBase<bool>
 {

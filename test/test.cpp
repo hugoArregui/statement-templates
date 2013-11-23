@@ -113,7 +113,7 @@ static void testParallelFor()
             Variable<int, Context, &Context::i>,
             Literal<int, 100>
         >,
-        PreIncrStatement<int, Variable<int, Context, &Context::i>>,
+        PostIncrStatement<int, Variable<int, Context, &Context::i>>,
         MyStatement
     > pf;
 
