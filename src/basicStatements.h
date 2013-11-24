@@ -115,6 +115,19 @@ struct PostIncrStatement : StatementBase<RetType>
     }
 };
 
+template <class RetType, class LValue, class RValue>
+struct AddAssignStatement : StatementBase<RetType>
+{
+    LValue lvalue;
+    RValue rvalue;
+
+    template <class T>
+    RetType operator()(T& context)
+    {
+        return lvalue(context) += rvalue(context);
+    }
+};
+
 template <class Left, class Right>
 struct ComparisonStatement: StatementBase<bool>
 {
