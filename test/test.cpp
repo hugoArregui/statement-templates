@@ -29,6 +29,7 @@
 #include "basicStatements.h"
 #include "parallelFor.h"
 #include "cyclomaticComplexity.h"
+#include "statementListBuilder.h"
 
 struct Context
 {
@@ -72,7 +73,7 @@ static void testSerialFor()
             Literal<int, 100>
         >,
         PreIncrStatement<int, Variable<int, Context, &Context::i>>,
-        StatementsList<
+        StatementsListBuilder<
             AssignStatement<int,
                 Variable<int, Context, &Context::x>,
                 AddStatement<int,
@@ -88,7 +89,7 @@ static void testSerialFor()
                 >
             >,
             MyStatement
-        >
+        >::Type
     > f;
 
     f(ctx);
@@ -133,7 +134,7 @@ void testCyclomaticComplexity() {
         >::value << std::endl;
     cout << "cyclomatic complexity: " << 
         CyclomaticComplexity<
-                StatementsList<
+                StatementsListBuilder<
                     AssignStatement<int,
                         Variable<int, Context, &Context::x>,
                         AddStatement<int,
@@ -152,7 +153,7 @@ void testCyclomaticComplexity() {
                         LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
                         MyStatement
                     >
-                >
+                >::Type
         >::value << std::endl;
     cout << "cyclomatic complexity: " << 
         CyclomaticComplexity<
@@ -176,7 +177,7 @@ void testCyclomaticComplexity() {
                     Literal<int, 100>
                 >,
                 PreIncrStatement<int, Variable<int, Context, &Context::i>>,
-                StatementsList<
+                StatementsListBuilder<
                     AssignStatement<int,
                         Variable<int, Context, &Context::x>,
                         AddStatement<int,
@@ -198,7 +199,7 @@ void testCyclomaticComplexity() {
                             MyStatement
                         >
                     >
-                >
+                >::Type
             > 
         >::value << std::endl;
 }

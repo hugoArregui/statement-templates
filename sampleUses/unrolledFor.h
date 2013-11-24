@@ -31,14 +31,14 @@
 #include "basicStatements.h"
 
 template <class Init, class Condition, class Incr, class Body>
-class UnrolledForStatement : public ForStatement<Init, Condition, Incr, Body>
+struct UnrolledForStatement : public ForStatement<Init, Condition, Incr, Body>
 {
     // Default to basic for
 };
 
 #if 0
 template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Incr, class Body>
-class UnrolledForStatement<
+struct UnrolledForStatement<
         AssignStatement<int, AssignLeft, AssignRight>,
         LTComparisonStatement<CompLeft, CompRight>,
         Incr,
