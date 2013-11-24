@@ -30,22 +30,58 @@
 
 #include "basicStatements.h"
 
+template <unsigned int FROM, unsigned int TO, class Incr, class Body>
+struct UnrollLoop;
+
+template <int END, unsigned int FROM, unsigned int TO, class Incr, class Body>
+struct UnrollStep {
+};
+
+template <unsigned int FROM, unsigned int TO, class Incr, class Body>
+struct UnrollStep<1, FROM, TO, Incr, Body> {
+    typedef StatementsList<Body, StatementsList<Incr, typename UnrollLoop<FROM+1, TO, Incr, Body>::Type> > Type;
+};
+
+template <unsigned int FROM, unsigned int TO, class Incr, class Body>
+struct UnrollStep<0, FROM, TO, Incr, Body> {
+    typedef StatementsList<Body, NullList> Type;
+};
+
+template <unsigned int FROM, unsigned int TO, class Incr, class Body>
+struct UnrollLoop {
+    typedef typename UnrollStep<FROM < (TO - 1), FROM, TO, Incr, Body>::Type Type;
+};
+
+template <unsigned int FROM, unsigned int TO, class Init, class Incr, class Body>
+struct Unroll {
+    typedef StatementsList<Init, typename UnrollLoop<FROM, TO, Incr, Body>::Type> Type;
+};
+
 template <class Init, class Condition, class Incr, class Body>
 struct UnrolledForStatement : public ForStatement<Init, Condition, Incr, Body>
 {
     // Default to basic for
 };
 
-#if 0
-template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Incr, class Body>
-struct UnrolledForStatement<
-        AssignStatement<int, AssignLeft, AssignRight>,
-        LTComparisonStatement<CompLeft, CompRight>,
-        Incr,
-        Body
-      > : public StatementBase<void>
+template <class S>
+struct Transform 
 {
-#endif
+    typedef S Type;
+};
+
+template <class Var, unsigned int FROM, unsigned int TO, class Body>
+struct Transform<
+            ForStatement <
+                AssignStatement<unsigned int, Var, Literal<unsigned int, FROM> >,
+                LTComparisonStatement<Var, Literal<unsigned int, TO> >,
+                PostIncrStatement<unsigned int, Var>,
+                Body
+            > 
+        >
+{
+    typedef AssignStatement<unsigned int, Var, Literal<unsigned int, FROM> > Init;
+    typedef typename Unroll<FROM, TO, Init, PostIncrStatement<unsigned int, Var>, Body>::Type Type;
+};
 
 #endif
 
