@@ -10,3 +10,5 @@ For example:
 
  - unrolledFor is an (upcoming) implementation of the loop-unrolling technique
    of loops, which forwards to the native for-loop when it fails to vectorize.
+
+ - cyclomaticComplexity is an implementation of the cyclomatic complexity algorithm.
