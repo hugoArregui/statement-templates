@@ -29,20 +29,7 @@
 #define UNROLLED_FOR_H
 
 #include "basicStatements.h"
-
-template <bool C, class T, class F>
-struct If {
-};
-
-template <class T, class F>
-struct If<true, T, F> {
-    typedef T Type;
-};
-
-template <class T, class F>
-struct If<false, T, F> {
-    typedef F Type;
-};
+#include "utils.h"
 
 template <unsigned int FROM, unsigned int TO, class Init, class Incr, class Body>
 struct Unroll {
