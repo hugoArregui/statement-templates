@@ -159,6 +159,8 @@ struct Eval {
     }
 };
 
+struct NullList {};
+
 template <class Head, class Tail>
 struct StatementsList
 {
@@ -178,11 +180,11 @@ struct StatementsList
 };
 
 template <class Head>
-struct StatementsList<Head, NOP>  
+struct StatementsList<Head, NullList>  
 {
     typedef typename Head::ReturnType ReturnType;
     Head head;
-    Eval<StatementsList<Head, NOP>> eval;
+    Eval<StatementsList<Head, NullList> > eval;
 
     template <class T>
     ReturnType operator()(T& context)
@@ -209,9 +211,9 @@ struct Eval<StatementsList<Head, Tail> > {
 };
 
 template <class Head>
-struct Eval<StatementsList<Head, NOP> > {
+struct Eval<StatementsList<Head, NullList> > {
 
-    typedef StatementsList<Head, NOP> List;
+    typedef StatementsList<Head, NullList> List;
     typedef typename List::ReturnType ReturnType;
     Eval<Head> headEval;
 

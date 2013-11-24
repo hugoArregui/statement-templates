@@ -36,6 +36,7 @@ struct Context
     int i;
     int x;
     int y;
+    unsigned int r;
 };
 
 struct MyStatement : StatementBase<void>
@@ -47,10 +48,18 @@ struct MyStatement : StatementBase<void>
     }
 };
 
+struct MyRStatement : StatementBase<void>
+{
+    template <class T>
+    void operator()(T& context)
+    {
+        cout << "r = " << context.r << endl;
+    }
+};
 
 static void testSerialFor()
 {
-    Context ctx { 0, 0, 0 };
+    Context ctx { 0, 0, 0, 0 };
 
     /* The follow program:
 
@@ -98,7 +107,7 @@ static void testSerialFor()
 
 static void testParallelFor()
 {
-    Context ctx { 0, 0, 0 };
+    Context ctx { 0, 0, 0, 0 };
 
     /* The follow program:
 
@@ -121,6 +130,28 @@ static void testParallelFor()
     > pf;
 
     pf(ctx);
+}
+
+static void testLoopUnroll()
+{
+    Context ctx { 0, 0, 0, 1 };
+
+    Transform<
+        ForStatement <
+            AssignStatement<unsigned int,
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 1>
+            >,
+            LTComparisonStatement<
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 100>
+            >,
+            PostIncrStatement<unsigned int, Variable<unsigned int, Context, &Context::r> >,
+            MyRStatement
+        >
+    >::Type uf;
+
+    uf(ctx);
 }
 
 void testCyclomaticComplexity() {
@@ -206,11 +237,14 @@ void testCyclomaticComplexity() {
 
 int main()
 {
-    cout << "Serial for: " << endl;
-    testSerialFor();
+    //cout << "Serial for: " << endl;
+    //testSerialFor();
 
-    cout << endl << "Parallel for: " << endl;
-    testParallelFor();
+    //cout << endl << "Parallel for: " << endl;
+    //testParallelFor();
+
+    cout << endl << "Unrolled for: " << endl;
+    testLoopUnroll();
 
     testCyclomaticComplexity();
 }
