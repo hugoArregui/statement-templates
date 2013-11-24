@@ -27,6 +27,7 @@
 
 #include "basicStatements.h"
 #include "parallelFor.h"
+#include "cyclomaticComplexity.h"
 
 struct Context
 {
@@ -120,6 +121,87 @@ static void testParallelFor()
     pf(ctx);
 }
 
+void testCyclomaticComplexity() {
+    cout << "cyclomatic complexity: " << CyclomaticComplexity<MyStatement>::value << std::endl;
+    cout << "cyclomatic complexity: " << 
+        CyclomaticComplexity<
+            IfStatement<
+                LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                MyStatement
+            >
+        >::value << std::endl;
+    cout << "cyclomatic complexity: " << 
+        CyclomaticComplexity<
+                StatementsList<
+                    AssignStatement<int,
+                        Variable<int, Context, &Context::x>,
+                        AddStatement<int,
+                            Variable<int, Context, &Context::x>,
+                            Variable<int, Context, &Context::i>
+                        >
+                    >,
+                    AssignStatement<int,
+                        Variable<int, Context, &Context::y>,
+                        AddStatement<int,
+                            Variable<int, Context, &Context::x>,
+                            Variable<int, Context, &Context::y>
+                        >
+                    >,
+                    IfStatement<
+                        LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                        MyStatement
+                    >
+                >
+        >::value << std::endl;
+    cout << "cyclomatic complexity: " << 
+        CyclomaticComplexity<
+            IfStatement<
+                LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                IfStatement<
+                    LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                    MyStatement
+                >
+            >
+        >::value << std::endl;
+    cout << "cyclomatic complexity: " << 
+        CyclomaticComplexity<
+            ForStatement<
+                AssignStatement<int,
+                    Variable<int, Context, &Context::i>,
+                    Literal<int, 1>
+                >,
+                LTComparisonStatement<
+                    Variable<int, Context, &Context::i>,
+                    Literal<int, 100>
+                >,
+                PreIncrStatement<int, Variable<int, Context, &Context::i>>,
+                StatementsList<
+                    AssignStatement<int,
+                        Variable<int, Context, &Context::x>,
+                        AddStatement<int,
+                            Variable<int, Context, &Context::x>,
+                            Variable<int, Context, &Context::i>
+                        >
+                    >,
+                    AssignStatement<int,
+                        Variable<int, Context, &Context::y>,
+                        AddStatement<int,
+                            Variable<int, Context, &Context::x>,
+                            Variable<int, Context, &Context::y>
+                        >
+                    >,
+                    IfStatement<
+                        LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                        IfStatement<
+                            LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                            MyStatement
+                        >
+                    >
+                >
+            > 
+        >::value << std::endl;
+}
+
 int main()
 {
     cout << "Serial for: " << endl;
@@ -127,5 +209,7 @@ int main()
 
     cout << endl << "Parallel for: " << endl;
     testParallelFor();
+
+    testCyclomaticComplexity();
 }
 
