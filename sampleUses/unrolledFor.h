@@ -30,31 +30,44 @@
 
 #include "basicStatements.h"
 
-template <unsigned int FROM, unsigned int TO, class Incr, class Body>
-struct UnrollLoop;
-
-template <int END, unsigned int FROM, unsigned int TO, class Incr, class Body>
-struct UnrollStep {
+template <bool C, class T, class F>
+struct If {
 };
 
-template <unsigned int FROM, unsigned int TO, class Incr, class Body>
-struct UnrollStep<1, FROM, TO, Incr, Body> {
-    typedef StatementsList<Body, StatementsList<Incr, typename UnrollLoop<FROM+1, TO, Incr, Body>::Type> > Type;
+template <class T, class F>
+struct If<true, T, F> {
+    typedef T Type;
 };
 
-template <unsigned int FROM, unsigned int TO, class Incr, class Body>
-struct UnrollStep<0, FROM, TO, Incr, Body> {
-    typedef StatementsList<Body, NullList> Type;
-};
-
-template <unsigned int FROM, unsigned int TO, class Incr, class Body>
-struct UnrollLoop {
-    typedef typename UnrollStep<FROM < (TO - 1), FROM, TO, Incr, Body>::Type Type;
+template <class T, class F>
+struct If<false, T, F> {
+    typedef F Type;
 };
 
 template <unsigned int FROM, unsigned int TO, class Init, class Incr, class Body>
 struct Unroll {
-    typedef StatementsList<Init, typename UnrollLoop<FROM, TO, Incr, Body>::Type> Type;
+    template <unsigned int START>
+    struct UnrollLoop;
+
+    template <bool END, unsigned int START>
+    struct UnrollStep {};
+
+    template <unsigned int START>
+    struct UnrollStep<true, START> {
+        typedef StatementsList<Body, StatementsList<Incr, typename UnrollLoop<START+1>::Type> > Type;
+    };
+
+    template <unsigned int START>
+    struct UnrollStep<false, START> {
+        typedef StatementsList<Body, NullList> Type;
+    };
+
+    template <unsigned int START>
+    struct UnrollLoop {
+        typedef typename UnrollStep<START < (TO - 1), START>::Type Type;
+    };
+
+    typedef typename If<FROM < TO, StatementsList<Init, typename UnrollLoop<FROM>::Type>, NOP>::Type Type;
 };
 
 template <class Init, class Condition, class Incr, class Body>

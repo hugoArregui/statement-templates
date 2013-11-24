@@ -237,11 +237,11 @@ void testCyclomaticComplexity() {
 
 int main()
 {
-    //cout << "Serial for: " << endl;
-    //testSerialFor();
+    cout << "Serial for: " << endl;
+    testSerialFor();
 
-    //cout << endl << "Parallel for: " << endl;
-    //testParallelFor();
+    cout << endl << "Parallel for: " << endl;
+    testParallelFor();
 
     cout << endl << "Unrolled for: " << endl;
     testLoopUnroll();
