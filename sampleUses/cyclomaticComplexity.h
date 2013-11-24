@@ -25,11 +25,7 @@
  *
  */
 
-template <int a, int b>
-struct Max
-{
-    static const int value = a > b ? a : b;
-};
+#include "utils.h"
 
 // Based on: http://users.csc.calpoly.edu/~jdalbey/206/Lectures/BasisPathTutorial/index.html
 template <class T>
