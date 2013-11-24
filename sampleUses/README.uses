@@ -1,0 +1,12 @@
+Files in this directory show sample usage of the basic facilities.
+For example:
+
+ - parallelFor is an implementation of a thread-based parallelization loop,
+   which forwards to the vectorFor when either it fails to parallelize or
+   to vectorize individual thread loops.
+
+ - vectorFor is an (upcoming) implementation of a SIMD vectorization loop,
+   which forwards to the unrolledFor when fails to vectorize.
+
+ - unrolledFor is an (upcoming) implementation of the loop-unrolling technique
+   of loops, which forwards to the native for-loop when it fails to vectorize.
