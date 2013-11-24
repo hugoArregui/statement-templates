@@ -1,4 +1,13 @@
 Please visit the project homepage at http://statement-templates.googlecode.com
 
-To build in gcc (4.7 or above) issue ./build in a linux shell.
+To build in gcc (4.7 or above) issue make in a linux shell.
+
+The source code is organized as follows:
+  * src/            Contains the basicStatements, those that should be created
+                    by the compiler at compile time.
+
+  * sampleUses/     Sample libraries that would overload the statements.
+                    Look here!
+
+  * test/           Cpp file to test and show results.
 
