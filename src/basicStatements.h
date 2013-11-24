@@ -148,36 +148,77 @@ struct LTComparisonStatement: ComparisonStatement<Left, Right>
     }
 };
 
-template <class ... Statements>
-struct StatementsList;
-
-template <class Last>
-struct StatementsList<Last> : Last
-{
-    using Last::ReturnType;
+template <class Statement>
+struct Eval {
+    typedef typename Statement::ReturnType ReturnType;
 
     template <class T>
-    typename Last::ReturnType operator()(T& context)
+    ReturnType operator()(T& context, Statement s)
     {
-        return Last::operator()(context);
+        return s(context);
     }
 };
 
-
-template <class Head, class... Tail>
-struct StatementsList<Head, Tail...> : StatementsList<Tail...>
+template <class Head, class Tail>
+struct StatementsList
 {
+    typedef typename Tail::ReturnType ReturnType;
+    typedef Tail Next;
+
     Head head;
+    Tail tail; 
 
-    typedef StatementsList<Tail...> Next;
-
-    using Next::ReturnType;
+    Eval<StatementsList<Head, Tail>> eval;
 
     template <class T>
-    typename Next::ReturnType operator()(T& context)
+    ReturnType operator()(T& context)
     {
-        head(context);
-        return Next::operator()(context);
+        return eval.operator()(context, *this);
+    }
+};
+
+template <class Head>
+struct StatementsList<Head, NOP>  
+{
+    typedef typename Head::ReturnType ReturnType;
+    Head head;
+    Eval<StatementsList<Head, NOP>> eval;
+
+    template <class T>
+    ReturnType operator()(T& context)
+    {
+        return eval.operator()(context, *this);
+    }
+};
+
+template <class Head, class Tail>
+struct Eval<StatementsList<Head, Tail> > {
+
+    typedef StatementsList<Head, Tail> List;
+    typedef typename List::ReturnType ReturnType;
+
+    Eval<Head> headEval;
+    Eval<Tail> tailEval;
+
+    template <class T>
+    ReturnType operator()(T& context, List sl)
+    {
+        headEval(context, sl.head);
+        tailEval(context, sl.tail);
+    }
+};
+
+template <class Head>
+struct Eval<StatementsList<Head, NOP> > {
+
+    typedef StatementsList<Head, NOP> List;
+    typedef typename List::ReturnType ReturnType;
+    Eval<Head> headEval;
+
+    template <class T>
+    void operator()(T& context, List sl)
+    {
+        headEval(context, sl.head);
     }
 };
 

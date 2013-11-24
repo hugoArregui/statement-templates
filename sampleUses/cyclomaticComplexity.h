@@ -44,16 +44,16 @@ struct CyclomaticComplexity<NOP>
     static const int value = 0;
 };
 
-template <class Last>
-struct CyclomaticComplexity<StatementsList<Last>> 
+template <class Head>
+struct CyclomaticComplexity<StatementsList<Head, NOP>> 
 {
-    static const int value = CyclomaticComplexity<Last>::value;
+    static const int value = CyclomaticComplexity<Head>::value;
 };
 
-template <class Head, class... Tail>
-struct CyclomaticComplexity<StatementsList<Head, Tail...>> 
+template <class Head, class Tail>
+struct CyclomaticComplexity<StatementsList<Head, Tail>> 
 {
-    static const int value = Max<CyclomaticComplexity<Head>::value, CyclomaticComplexity<StatementsList<Tail...>>::value>::value;
+    static const int value = Max<CyclomaticComplexity<Head>::value, CyclomaticComplexity<Tail>::value>::value;
 };
 
 template <class Init, class Condition, class Incr, class Body>
