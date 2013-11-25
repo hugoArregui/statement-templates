@@ -32,7 +32,8 @@
 #include "utils.h"
 
 template <unsigned int FROM, unsigned int TO, class Init, class Incr, class Body>
-struct Unroll {
+struct Unroll 
+{
     template <unsigned int START>
     struct UnrollLoop;
 
@@ -40,17 +41,20 @@ struct Unroll {
     struct UnrollStep {};
 
     template <unsigned int START>
-    struct UnrollStep<true, START> {
+    struct UnrollStep<true, START> 
+    {
         typedef StatementsList<Body, StatementsList<Incr, typename UnrollLoop<START+1>::Type> > Type;
     };
 
     template <unsigned int START>
-    struct UnrollStep<false, START> {
+    struct UnrollStep<false, START> 
+    {
         typedef StatementsList<Body, NullList> Type;
     };
 
     template <unsigned int START>
-    struct UnrollLoop {
+    struct UnrollLoop 
+    {
         typedef typename UnrollStep<START < (TO - 1), START>::Type Type;
     };
 
