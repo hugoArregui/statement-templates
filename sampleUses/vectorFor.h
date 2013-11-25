@@ -32,7 +32,7 @@
 #include "unrolledFor.h"
 
 template <class Init, class Condition, class Incr, class Body>
-class VectorForStatement : public UnrolledForStatement<Init, Condition, Incr, Body>
+class VectorForStatement : public ForStatement<Init, Condition, Incr, Body>
 {
     // TBD
 };

@@ -57,12 +57,6 @@ struct Unroll {
     typedef typename If<FROM < TO, StatementsList<Init, typename UnrollLoop<FROM>::Type>, NOP>::Type Type;
 };
 
-template <class Init, class Condition, class Incr, class Body>
-struct UnrolledForStatement : public ForStatement<Init, Condition, Incr, Body>
-{
-    // Default to basic for
-};
-
 template <class S>
 struct Transform 
 {
