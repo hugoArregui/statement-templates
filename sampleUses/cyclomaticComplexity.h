@@ -25,6 +25,9 @@
  *
  */
 
+#ifndef CYCLOMATIC_COMPLEXITY_H
+#define CYCLOMATIC_COMPLEXITY_H
+
 #include "utils.h"
 
 // Based on: http://users.csc.calpoly.edu/~jdalbey/206/Lectures/BasisPathTutorial/index.html
@@ -41,7 +44,7 @@ struct CyclomaticComplexity<NOP>
 };
 
 template <class Head>
-struct CyclomaticComplexity<StatementsList<Head, NOP>> 
+struct CyclomaticComplexity<StatementsList<Head, NullList>> 
 {
     static const int value = CyclomaticComplexity<Head>::value;
 };
@@ -63,3 +66,6 @@ struct CyclomaticComplexity<IfStatement<Condition, TruePart, ElsePart>>
 {
     static const int value = 1 + Max<CyclomaticComplexity<TruePart>::value, CyclomaticComplexity<ElsePart>::value>::value;
 };
+
+#endif
+

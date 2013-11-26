@@ -35,17 +35,16 @@ struct Max
 };
 
 template <bool C, class T, class F>
-struct If {
-};
-
-template <class T, class F>
-struct If<true, T, F> {
+struct If 
+{
     typedef T Type;
 };
 
 template <class T, class F>
-struct If<false, T, F> {
+struct If<false, T, F> 
+{
     typedef F Type;
 };
 
 #endif
+

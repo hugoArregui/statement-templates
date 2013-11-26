@@ -154,7 +154,7 @@ static void testLoopUnroll()
     uf(ctx);
 }
 
-void testCyclomaticComplexity() {
+static void testCyclomaticComplexity() {
     cout << "cyclomatic complexity: " << CyclomaticComplexity<MyStatement>::value << std::endl;
     cout << "cyclomatic complexity: " << 
         CyclomaticComplexity<

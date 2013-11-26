@@ -5,7 +5,7 @@ struct StatementsListBuilder;
 template <class Last>
 struct StatementsListBuilder<Last> : Last
 {
-    typedef StatementsList<Last, NOP> Type;
+    typedef StatementsList<Last, NullList> Type;
 };
 
 
