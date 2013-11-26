@@ -25,6 +25,9 @@
  *
  */
 
+#ifndef CYCLOMATIC_COMPLEXITY_H
+#define CYCLOMATIC_COMPLEXITY_H
+
 template <int a, int b>
 struct Max
 {
@@ -67,3 +70,6 @@ struct CyclomaticComplexity<IfStatement<Condition, TruePart, ElsePart>>
 {
     static const int value = 1 + Max<CyclomaticComplexity<TruePart>::value, CyclomaticComplexity<ElsePart>::value>::value;
 };
+
+#endif
+
