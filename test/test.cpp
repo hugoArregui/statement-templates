@@ -30,6 +30,7 @@
 #include "parallelFor.h"
 #include "cyclomaticComplexity.h"
 #include "statementListBuilder.h"
+#include "staticChecking.h"
 
 struct Context
 {
@@ -236,6 +237,49 @@ static void testCyclomaticComplexity()
         >::value << std::endl;
 }
 
+static void testStaticChecking()
+{
+    typedef
+        ForStatement<
+            AssignStatement<int,
+                Variable<int, Context, &Context::i>,
+                Literal<int, 1>
+            >,
+            LTComparisonStatement<
+                Variable<int, Context, &Context::i>,
+                Literal<int, 100>
+            >,
+            PreIncrStatement<int, Variable<int, Context, &Context::i>>,
+            StatementsListBuilder <
+                AssignStatement<int,
+                    Variable<int, Context, &Context::x>,
+                    AddStatement<int,
+                        Variable<int, Context, &Context::x>,
+                        Variable<int, Context, &Context::i>
+                    >
+                >,
+                AssignStatement<int,
+                    Variable<int, Context, &Context::y>,
+                    AddStatement<int,
+                        Variable<int, Context, &Context::x>,
+                        Variable<int, Context, &Context::y>
+                    >
+                >,
+                IfStatement<
+                    LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                    IfStatement<
+                        LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
+                        MyStatement
+                    >
+                >
+            >::Type
+        >
+
+        Program;
+
+    StaticCheck<Program>::dummy();
+}
+
 int main()
 {
     cout << "Serial for: " << endl;
@@ -248,5 +292,7 @@ int main()
     testLoopUnroll();
 
     testCyclomaticComplexity();
+
+    testStaticChecking();
 }
 
