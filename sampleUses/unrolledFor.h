@@ -50,7 +50,7 @@ struct Unroll
     template <unsigned int START>
     struct UnrollStep<false, START> 
     {
-        typedef StatementsList<Body, NullList> Type;
+        typedef StatementsList<Body, NIL> Type;
     };
 
     template <unsigned int START>
@@ -59,7 +59,7 @@ struct Unroll
         typedef typename UnrollStep<START < (TO - 1), START>::Type Type;
     };
 
-    typedef typename If<(FROM < TO), StatementsList<Init, typename UnrollLoop<FROM>::Type>, NullList>::Type Type;
+    typedef typename If<(FROM < TO), StatementsList<Init, typename UnrollLoop<FROM>::Type>, NIL>::Type Type;
 };
 
 template <class S>

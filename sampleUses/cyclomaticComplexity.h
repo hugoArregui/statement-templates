@@ -44,7 +44,7 @@ struct CyclomaticComplexity<NOP>
 };
 
 template <class Head>
-struct CyclomaticComplexity<StatementsList<Head, NullList>> 
+struct CyclomaticComplexity<StatementsList<Head, NIL>> 
 {
     static const int value = CyclomaticComplexity<Head>::value;
 };

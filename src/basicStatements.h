@@ -148,79 +148,34 @@ struct LTComparisonStatement: ComparisonStatement<Left, Right>
     }
 };
 
-template <class Statement>
-struct Eval {
-    typedef typename Statement::ReturnType ReturnType;
-
-    template <class T>
-    ReturnType operator()(T& context, Statement s)
-    {
-        return s(context);
-    }
-};
-
-struct NullList {};
+struct NIL {};
 
 template <class Head, class Tail>
-struct StatementsList
+struct StatementsList : public Tail
 {
     typedef typename Tail::ReturnType ReturnType;
     typedef Tail Next;
 
     Head head;
-    Tail tail; 
-
-    Eval<StatementsList<Head, Tail>> eval;
 
     template <class T>
     ReturnType operator()(T& context)
     {
-        return eval.operator()(context, *this);
+        head(context);
+        return Tail::operator()(context);
     }
 };
 
 template <class Head>
-struct StatementsList<Head, NullList>  
+struct StatementsList<Head, NIL>  
 {
     typedef typename Head::ReturnType ReturnType;
     Head head;
-    Eval<StatementsList<Head, NullList> > eval;
 
     template <class T>
     ReturnType operator()(T& context)
     {
-        return eval.operator()(context, *this);
-    }
-};
-
-template <class Head, class Tail>
-struct Eval<StatementsList<Head, Tail> > {
-
-    typedef StatementsList<Head, Tail> List;
-    typedef typename List::ReturnType ReturnType;
-
-    Eval<Head> headEval;
-    Eval<Tail> tailEval;
-
-    template <class T>
-    ReturnType operator()(T& context, List sl)
-    {
-        headEval(context, sl.head);
-        tailEval(context, sl.tail);
-    }
-};
-
-template <class Head>
-struct Eval<StatementsList<Head, NullList> > {
-
-    typedef StatementsList<Head, NullList> List;
-    typedef typename List::ReturnType ReturnType;
-    Eval<Head> headEval;
-
-    template <class T>
-    void operator()(T& context, List sl)
-    {
-        headEval(context, sl.head);
+        return head(context);
     }
 };
 
