@@ -29,7 +29,7 @@
 #include "basicStatements.h"
 #include "parallelFor.h"
 #include "cyclomaticComplexity.h"
-#include "statementListBuilder.h"
+#include "statementsListBuilder.h"
 #include "staticChecking.h"
 
 struct Context
@@ -137,7 +137,7 @@ static void testLoopUnroll()
 {
     Context ctx { 0, 0, 0, 1 };
 
-    Transform<
+    UnrollFormTransform<
         ForStatement <
             AssignStatement<unsigned int,
                 Variable<unsigned int, Context, &Context::r>,

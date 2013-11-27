@@ -63,13 +63,13 @@ struct Unroll
 };
 
 template <class S>
-struct Transform 
+struct UnrollFormTransform
 {
     typedef S Type;
 };
 
 template <class Var, unsigned int FROM, unsigned int TO, class Body>
-struct Transform<
+struct UnrollFormTransform<
             ForStatement <
                 AssignStatement<unsigned int, Var, Literal<unsigned int, FROM> >,
                 LTComparisonStatement<Var, Literal<unsigned int, TO> >,

@@ -1,5 +1,5 @@
 /**
- * \file  statementListBuilder.h
+ * \file  statementsListBuilder.h
  * \brief syntax sugar for statements list generation
  *
  * Statements-templates: Extending expression templates to statements and flow control
