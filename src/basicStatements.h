@@ -154,7 +154,6 @@ template <class Head, class Tail>
 struct StatementsList : public Tail
 {
     typedef typename Tail::ReturnType ReturnType;
-    typedef Tail Next;
 
     Head head;
 
