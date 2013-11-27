@@ -59,27 +59,50 @@ struct Unroll
         typedef typename UnrollStep<START < (TO - 1), START>::Type Type;
     };
 
-    typedef typename If<(FROM < TO), StatementsList<Init, typename UnrollLoop<FROM>::Type>, NIL>::Type Type;
+    typedef typename If<(FROM < TO), StatementsList<Init, typename UnrollLoop<FROM>::Type>, NOP>::Type Type;
 };
 
 template <class S>
-struct UnrollFormTransform
+struct BaseUnrollFormTransform
 {
     typedef S Type;
 };
 
-template <class Var, unsigned int FROM, unsigned int TO, class Body>
-struct UnrollFormTransform<
+template <class Var, unsigned int FROM, unsigned int TO, class Incr, class Body>
+struct BaseUnrollFormTransform <
             ForStatement <
                 AssignStatement<unsigned int, Var, Literal<unsigned int, FROM> >,
                 LTComparisonStatement<Var, Literal<unsigned int, TO> >,
-                PostIncrStatement<unsigned int, Var>,
+                Incr,
                 Body
             > 
         >
 {
     typedef AssignStatement<unsigned int, Var, Literal<unsigned int, FROM> > Init;
-    typedef typename Unroll<FROM, TO, Init, PostIncrStatement<unsigned int, Var>, Body>::Type Type;
+    typedef typename Unroll<FROM, TO, Init, Incr, Body>::Type Type;
+};
+
+template <class S>
+struct UnrollFormTransform : BaseUnrollFormTransform<S>
+{
+};
+
+template <class Var, class Assign, class Comp, class Body>
+struct UnrollFormTransform <
+            ForStatement < Assign, Comp, PreIncrStatement<unsigned int, Var>, Body > 
+        > : BaseUnrollFormTransform <
+                ForStatement < Assign, Comp, PreIncrStatement<unsigned int, Var>, Body > 
+            >
+{
+};
+
+template <class Var, class Assign, class Comp, class Body>
+struct UnrollFormTransform <
+            ForStatement < Assign, Comp, PostIncrStatement<unsigned int, Var>, Body > 
+        > : BaseUnrollFormTransform <
+                ForStatement < Assign, Comp, PostIncrStatement<unsigned int, Var>, Body > 
+            >
+{
 };
 
 #endif

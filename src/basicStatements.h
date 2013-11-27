@@ -166,7 +166,7 @@ struct StatementsList : public Tail
 };
 
 template <class Head>
-struct StatementsList<Head, NIL>  
+struct StatementsList<Head, NIL>  : StatementBase<void>
 {
     typedef typename Head::ReturnType ReturnType;
     Head head;
