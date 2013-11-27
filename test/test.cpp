@@ -145,7 +145,7 @@ static void testLoopUnroll()
             >,
             LTComparisonStatement<
                 Variable<unsigned int, Context, &Context::r>,
-                Literal<unsigned int, 100>
+                Literal<unsigned int, 10>
             >,
             PostIncrStatement<unsigned int, Variable<unsigned int, Context, &Context::r> >,
             MyRStatement
@@ -153,6 +153,23 @@ static void testLoopUnroll()
     >::Type uf;
 
     uf(ctx);
+
+    UnrollFormTransform<
+        ForStatement <
+            AssignStatement<unsigned int,
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 10>
+            >,
+            LTComparisonStatement<
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 20>
+            >,
+            PreIncrStatement<unsigned int, Variable<unsigned int, Context, &Context::r> >,
+            MyRStatement
+        >
+    >::Type uf2;
+
+    uf2(ctx);
 }
 
 static void testCyclomaticComplexity() 
