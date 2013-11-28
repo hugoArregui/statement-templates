@@ -9,7 +9,7 @@
  * This file is part of the Statement-templates project.
  *
  * Authors:         Daniel Gutson (original idea and code)
- *                  Hugo Arregui (Cyclomatic Complexity)
+ *                  Hugo Arregui
  *
  * Statement-tamplets is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
  *
  */
 
+#include <cassert>
 #include "basicStatements.h"
 #include "parallelFor.h"
 #include "cyclomaticComplexity.h"
@@ -170,6 +171,24 @@ static void testLoopUnroll()
     >::Type uf2;
 
     uf2(ctx);
+
+    UnrollFormTransform<
+        ForStatement <
+            AssignStatement<unsigned int,
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 100>
+            >,
+            LTComparisonStatement<
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 20>
+            >,
+            PreIncrStatement<unsigned int, Variable<unsigned int, Context, &Context::r> >,
+            MyRStatement
+        >
+    >::Type uf3;
+
+    uf3(ctx);
+    assert(ctx.r == 100);
 }
 
 static void testCyclomaticComplexity() 
