@@ -8,7 +8,7 @@
  *
  * This file is part of the Statement-templates project.
  *
- * Author:         Daniel Gutson, Hugo Arregui
+ * Author:         Hugo Arregui
  *
  * Statement-tamplets is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,9 @@ struct Unroll
         typedef typename UnrollStep<START < (TO - 1), START>::Type Type;
     };
 
-    typedef typename If<(FROM < TO), StatementsList<Init, typename UnrollLoop<FROM>::Type>, NOP>::Type Type;
+    typedef StatementsList<Init, typename If<(FROM < TO), 
+                                            typename UnrollLoop<FROM>::Type,
+                                            NIL >::Type > Type;
 };
 
 template <class S>
