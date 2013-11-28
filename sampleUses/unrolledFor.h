@@ -8,7 +8,7 @@
  *
  * This file is part of the Statement-templates project.
  *
- * Author:         Daniel Gutson
+ * Author:         Hugo Arregui
  *
  * Statement-tamplets is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,23 +29,83 @@
 #define UNROLLED_FOR_H
 
 #include "basicStatements.h"
+#include "utils.h"
 
-template <class Init, class Condition, class Incr, class Body>
-class UnrolledForStatement : public ForStatement<Init, Condition, Incr, Body>
+template <unsigned int FROM, unsigned int TO, class Init, class Incr, class Body>
+struct Unroll 
 {
-    // Default to basic for
+    template <unsigned int START>
+    struct UnrollLoop;
+
+    template <bool END, unsigned int START>
+    struct UnrollStep 
+    {};
+
+    template <unsigned int START>
+    struct UnrollStep<true, START> 
+    {
+        typedef StatementsList<Body, StatementsList<Incr, typename UnrollLoop<START+1>::Type> > Type;
+    };
+
+    template <unsigned int START>
+    struct UnrollStep<false, START> 
+    {
+        typedef StatementsList<Body, NIL> Type;
+    };
+
+    template <unsigned int START>
+    struct UnrollLoop 
+    {
+        typedef typename UnrollStep<START < (TO - 1), START>::Type Type;
+    };
+
+    typedef StatementsList<Init, typename If<(FROM < TO), 
+                                            typename UnrollLoop<FROM>::Type,
+                                            NIL >::Type > Type;
 };
 
-#if 0
-template <class AssignLeft, class AssignRight, class CompLeft, class CompRight, class Incr, class Body>
-class UnrolledForStatement<
-        AssignStatement<int, AssignLeft, AssignRight>,
-        LTComparisonStatement<CompLeft, CompRight>,
-        Incr,
-        Body
-      > : public StatementBase<void>
+template <class S>
+struct BaseUnrollFormTransform
 {
-#endif
+    typedef S Type;
+};
+
+template <class Var, unsigned int FROM, unsigned int TO, class Incr, class Body>
+struct BaseUnrollFormTransform <
+            ForStatement <
+                AssignStatement<unsigned int, Var, Literal<unsigned int, FROM> >,
+                LTComparisonStatement<Var, Literal<unsigned int, TO> >,
+                Incr,
+                Body
+            > 
+        >
+{
+    typedef AssignStatement<unsigned int, Var, Literal<unsigned int, FROM> > Init;
+    typedef typename Unroll<FROM, TO, Init, Incr, Body>::Type Type;
+};
+
+template <class S>
+struct UnrollFormTransform : BaseUnrollFormTransform<S>
+{
+};
+
+template <class Var, class Assign, class Comp, class Body>
+struct UnrollFormTransform <
+            ForStatement < Assign, Comp, PreIncrStatement<unsigned int, Var>, Body > 
+        > : BaseUnrollFormTransform <
+                ForStatement < Assign, Comp, PreIncrStatement<unsigned int, Var>, Body > 
+            >
+{
+};
+
+template <class Var, class Assign, class Comp, class Body>
+struct UnrollFormTransform <
+            ForStatement < Assign, Comp, PostIncrStatement<unsigned int, Var>, Body > 
+        > : BaseUnrollFormTransform <
+                ForStatement < Assign, Comp, PostIncrStatement<unsigned int, Var>, Body > 
+            >
+{
+};
 
 #endif
 

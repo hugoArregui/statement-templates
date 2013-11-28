@@ -9,7 +9,7 @@
  * This file is part of the Statement-templates project.
  *
  * Authors:         Daniel Gutson (original idea and code)
- *                  Hugo Arregui (Cyclomatic Complexity)
+ *                  Hugo Arregui
  *
  * Statement-tamplets is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,9 +26,11 @@
  *
  */
 
+#include <cassert>
 #include "basicStatements.h"
 #include "parallelFor.h"
 #include "cyclomaticComplexity.h"
+#include "statementsListBuilder.h"
 #include "staticChecking.h"
 
 struct Context
@@ -36,6 +38,7 @@ struct Context
     int i;
     int x;
     int y;
+    unsigned int r;
 };
 
 struct MyStatement : StatementBase<void>
@@ -47,10 +50,18 @@ struct MyStatement : StatementBase<void>
     }
 };
 
+struct MyRStatement : StatementBase<void>
+{
+    template <class T>
+    void operator()(T& context)
+    {
+        cout << "r = " << context.r << endl;
+    }
+};
 
 static void testSerialFor()
 {
-    Context ctx { 0, 0, 0 };
+    Context ctx { 0, 0, 0, 0 };
 
     /* The follow program:
 
@@ -73,7 +84,7 @@ static void testSerialFor()
             Literal<int, 100>
         >,
         PreIncrStatement<int, Variable<int, Context, &Context::i>>,
-        StatementsList<
+        StatementsListBuilder<
             AssignStatement<int,
                 Variable<int, Context, &Context::x>,
                 AddStatement<int,
@@ -89,7 +100,7 @@ static void testSerialFor()
                 >
             >,
             MyStatement
-        >
+        >::Type
     > f;
 
     f(ctx);
@@ -98,7 +109,7 @@ static void testSerialFor()
 
 static void testParallelFor()
 {
-    Context ctx { 0, 0, 0 };
+    Context ctx { 0, 0, 0, 0 };
 
     /* The follow program:
 
@@ -123,7 +134,64 @@ static void testParallelFor()
     pf(ctx);
 }
 
-static void testCyclomaticComplexity()
+static void testLoopUnroll()
+{
+    Context ctx { 0, 0, 0, 1 };
+
+    UnrollFormTransform<
+        ForStatement <
+            AssignStatement<unsigned int,
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 1>
+            >,
+            LTComparisonStatement<
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 10>
+            >,
+            PostIncrStatement<unsigned int, Variable<unsigned int, Context, &Context::r> >,
+            MyRStatement
+        >
+    >::Type uf;
+
+    uf(ctx);
+
+    UnrollFormTransform<
+        ForStatement <
+            AssignStatement<unsigned int,
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 10>
+            >,
+            LTComparisonStatement<
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 20>
+            >,
+            PreIncrStatement<unsigned int, Variable<unsigned int, Context, &Context::r> >,
+            MyRStatement
+        >
+    >::Type uf2;
+
+    uf2(ctx);
+
+    UnrollFormTransform<
+        ForStatement <
+            AssignStatement<unsigned int,
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 100>
+            >,
+            LTComparisonStatement<
+                Variable<unsigned int, Context, &Context::r>,
+                Literal<unsigned int, 20>
+            >,
+            PreIncrStatement<unsigned int, Variable<unsigned int, Context, &Context::r> >,
+            MyRStatement
+        >
+    >::Type uf3;
+
+    uf3(ctx);
+    assert(ctx.r == 100);
+}
+
+static void testCyclomaticComplexity() 
 {
     cout << "cyclomatic complexity: " << CyclomaticComplexity<MyStatement>::value << std::endl;
     cout << "cyclomatic complexity: " << 
@@ -135,7 +203,7 @@ static void testCyclomaticComplexity()
         >::value << std::endl;
     cout << "cyclomatic complexity: " << 
         CyclomaticComplexity<
-                StatementsList<
+                StatementsListBuilder<
                     AssignStatement<int,
                         Variable<int, Context, &Context::x>,
                         AddStatement<int,
@@ -154,7 +222,7 @@ static void testCyclomaticComplexity()
                         LTComparisonStatement<Variable<int, Context, &Context::i>, Literal<int, 100>>,
                         MyStatement
                     >
-                >
+                >::Type
         >::value << std::endl;
     cout << "cyclomatic complexity: " << 
         CyclomaticComplexity<
@@ -178,7 +246,7 @@ static void testCyclomaticComplexity()
                     Literal<int, 100>
                 >,
                 PreIncrStatement<int, Variable<int, Context, &Context::i>>,
-                StatementsList<
+                StatementsListBuilder<
                     AssignStatement<int,
                         Variable<int, Context, &Context::x>,
                         AddStatement<int,
@@ -200,7 +268,7 @@ static void testCyclomaticComplexity()
                             MyStatement
                         >
                     >
-                >
+                >::Type
             > 
         >::value << std::endl;
 }
@@ -218,7 +286,7 @@ static void testStaticChecking()
                 Literal<int, 100>
             >,
             PreIncrStatement<int, Variable<int, Context, &Context::i>>,
-            StatementsList<
+            StatementsListBuilder <
                 AssignStatement<int,
                     Variable<int, Context, &Context::x>,
                     AddStatement<int,
@@ -240,7 +308,7 @@ static void testStaticChecking()
                         MyStatement
                     >
                 >
-            >
+            >::Type
         >
 
         Program;
@@ -255,6 +323,9 @@ int main()
 
     cout << endl << "Parallel for: " << endl;
     testParallelFor();
+
+    cout << endl << "Unrolled for: " << endl;
+    testLoopUnroll();
 
     testCyclomaticComplexity();
 

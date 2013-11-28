@@ -28,11 +28,7 @@
 #ifndef CYCLOMATIC_COMPLEXITY_H
 #define CYCLOMATIC_COMPLEXITY_H
 
-template <int a, int b>
-struct Max
-{
-    static const int value = a > b ? a : b;
-};
+#include "utils.h"
 
 // Based on: http://users.csc.calpoly.edu/~jdalbey/206/Lectures/BasisPathTutorial/index.html
 template <class T>
@@ -47,16 +43,16 @@ struct CyclomaticComplexity<NOP>
     static const int value = 0;
 };
 
-template <class Last>
-struct CyclomaticComplexity<StatementsList<Last>> 
+template <class Head>
+struct CyclomaticComplexity<StatementsList<Head, NIL>> 
 {
-    static const int value = CyclomaticComplexity<Last>::value;
+    static const int value = CyclomaticComplexity<Head>::value;
 };
 
-template <class Head, class... Tail>
-struct CyclomaticComplexity<StatementsList<Head, Tail...>> 
+template <class Head, class Tail>
+struct CyclomaticComplexity<StatementsList<Head, Tail>> 
 {
-    static const int value = Max<CyclomaticComplexity<Head>::value, CyclomaticComplexity<StatementsList<Tail...>>::value>::value;
+    static const int value = Max<CyclomaticComplexity<Head>::value, CyclomaticComplexity<Tail>::value>::value;
 };
 
 template <class Init, class Condition, class Incr, class Body>

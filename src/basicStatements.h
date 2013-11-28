@@ -148,36 +148,33 @@ struct LTComparisonStatement: ComparisonStatement<Left, Right>
     }
 };
 
-template <class ... Statements>
-struct StatementsList;
+struct NIL {};
 
-template <class Last>
-struct StatementsList<Last> : Last
+template <class Head, class Tail>
+struct StatementsList : public Tail
 {
-    using Last::ReturnType;
+    typedef typename Tail::ReturnType ReturnType;
+
+    Head head;
 
     template <class T>
-    typename Last::ReturnType operator()(T& context)
+    ReturnType operator()(T& context)
     {
-        return Last::operator()(context);
+        head(context);
+        return Tail::operator()(context);
     }
 };
 
-
-template <class Head, class... Tail>
-struct StatementsList<Head, Tail...> : StatementsList<Tail...>
+template <class Head>
+struct StatementsList<Head, NIL>  : StatementBase<void>
 {
+    typedef typename Head::ReturnType ReturnType;
     Head head;
 
-    typedef StatementsList<Tail...> Next;
-
-    using Next::ReturnType;
-
     template <class T>
-    typename Next::ReturnType operator()(T& context)
+    ReturnType operator()(T& context)
     {
-        head(context);
-        return Next::operator()(context);
+        return head(context);
     }
 };
 
