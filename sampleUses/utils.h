@@ -1,6 +1,6 @@
 /**
- * \file  vectorFor.h
- * \brief Basic implementation of a vectorizing for.
+ * \file  utils.h
+ * \brief General purpose utils.
  *
  * Statements-templates: Extending expression templates to statements and flow control
  * <http://statement-templates.googlecode.com/>
@@ -8,7 +8,7 @@
  *
  * This file is part of the Statement-templates project.
  *
- * Author:         Daniel Gutson
+ * Author:        Hugo Arregui 
  *
  * Statement-tamplets is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,16 +25,25 @@
  *
  */
 
-#ifndef VECTOR_FOR_H
-#define VECTOR_FOR_H
+#ifndef UTILS_H
+#define UTILS_H
 
-#include "basicStatements.h"
-#include "unrolledFor.h"
-
-template <class Init, class Condition, class Incr, class Body>
-class VectorForStatement : public ForStatement<Init, Condition, Incr, Body>
+template <int a, int b>
+struct Max
 {
-    // TBD
+    static const int value = a > b ? a : b;
+};
+
+template <bool C, class T, class F>
+struct If 
+{
+    typedef T Type;
+};
+
+template <class T, class F>
+struct If<false, T, F> 
+{
+    typedef F Type;
 };
 
 #endif

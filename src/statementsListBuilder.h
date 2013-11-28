@@ -1,6 +1,6 @@
 /**
- * \file  vectorFor.h
- * \brief Basic implementation of a vectorizing for.
+ * \file  statementsListBuilder.h
+ * \brief syntax sugar for statements list generation
  *
  * Statements-templates: Extending expression templates to statements and flow control
  * <http://statement-templates.googlecode.com/>
@@ -8,7 +8,7 @@
  *
  * This file is part of the Statement-templates project.
  *
- * Author:         Daniel Gutson
+ * Author:         Hugo Arregui
  *
  * Statement-tamplets is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,16 +25,22 @@
  *
  */
 
-#ifndef VECTOR_FOR_H
-#define VECTOR_FOR_H
+#ifndef STATEMENTS_LIST_BUILDER_H
+#define STATEMENTS_LIST_BUILDER_H
 
-#include "basicStatements.h"
-#include "unrolledFor.h"
+template <class ... Statements>
+struct StatementsListBuilder;
 
-template <class Init, class Condition, class Incr, class Body>
-class VectorForStatement : public ForStatement<Init, Condition, Incr, Body>
+template <class Last>
+struct StatementsListBuilder<Last> : Last
 {
-    // TBD
+    typedef StatementsList<Last, NIL> Type;
+};
+
+template <class Head, class... Tail>
+struct StatementsListBuilder<Head, Tail...> : StatementsListBuilder<Tail...>
+{
+    typedef StatementsList<Head, typename StatementsListBuilder<Tail...>::Type> Type;
 };
 
 #endif
